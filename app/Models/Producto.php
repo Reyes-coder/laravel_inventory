@@ -23,7 +23,9 @@ class Producto extends Model
         'price',
         'stock',
         'sku',
-        'active'
+        'active',
+        'user_id',
+        'role'
     ];
 
     protected $casts = [
@@ -31,6 +33,14 @@ class Producto extends Model
         'stock' => 'integer',
         'active' => 'boolean'
     ];
+
+    /**
+     * Get the user that owns the product.
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     // protected $hidden = []; // Ocultar campos en JSON (ej: passwords)
     // protected $dates = [];

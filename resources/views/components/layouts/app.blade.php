@@ -1,36 +1,47 @@
-@props(['title' => 'Página'])
+@props(['title' => 'Página', 'header' => null])
 
 <!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title }} - Inventario</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
-<body class="bg-gradient-to-br from-slate-50 to-zinc-50">
-    <div class="min-h-screen flex flex-col">
-        <!-- Header -->
-        <header class="bg-white/50 backdrop-blur-md border-b border-slate-100">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                <h1 class="text-3xl font-light text-slate-700 tracking-wide">{{ $title }}</h1>
-                <p class="text-slate-500 text-sm mt-1 font-light">Gestiona tu inventario de forma sencilla</p>
-            </div>
-        </header>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <!-- Main Content -->
-        <main class="flex-1">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <title>{{ $title ?? config('app.name', 'Laravel') }}</title>
+
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Scripts -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <!-- Styles -->
+        @livewireStyles
+    </head>
+    <body class="font-sans antialiased">
+        <x-banner />
+
+        <div class="min-h-screen bg-gray-100">
+            @livewire('navigation-menu')
+
+            <!-- Page Heading -->
+            @if (isset($header) || $header)
+                <header class="bg-white shadow">
+                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                        {{ $header ?? '' }}
+                    </div>
+                </header>
+            @endif
+
+            <!-- Page Content -->
+            <main>
                 {{ $slot }}
-            </div>
-        </main>
+            </main>
+        </div>
 
-        <!-- Footer -->
-        <footer class="bg-white/30 backdrop-blur-sm border-t border-slate-100 mt-12">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 text-center text-sm text-slate-500 font-light">
-                <p>&copy; 2026 Sistema de Inventario. Todos los derechos reservados.</p>
-            </div>
-        </footer>
-    </div>
-</body>
+        @stack('modals')
+
+        @livewireScripts
+    </body>
 </html>

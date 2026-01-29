@@ -6,17 +6,26 @@ use App\Http\Controllers\Controller;
 use App\Models\Producto;
 use App\Http\Requests\StoreProductoRequest;
 use App\Http\Requests\UpdateProductoRequest;
+use Illuminate\Support\Facades\Auth;
 
 class ProductoController extends Controller
 {
     /**
      * Display a listing of the resource.
+     * - Admin sees all products
+     * - User sees only their own products
      */
     public function index()
     {
         $search = request('search');
+        $user = Auth::user();
 
         $query = Producto::query();
+
+        // Si el usuario no es admin, solo ve sus propios productos
+        if (!$user->isAdmin()) {
+            $query->where('user_id', $user->id);
+        }
 
         if ($search) {
             $query->where('name', 'like', "%{$search}%")
@@ -42,7 +51,14 @@ class ProductoController extends Controller
      */
     public function store(StoreProductoRequest $request)
     {
-        Producto::create($request->validated());
+        $user = Auth::user();
+
+        Producto::create([
+            ...$request->validated(),
+            'user_id' => $user->id,
+            'role' => $user->role
+        ]);
+
         return redirect()->route('productos.index')->with('success', 'Producto creado exitosamente.');
     }
 
@@ -51,6 +67,7 @@ class ProductoController extends Controller
      */
     public function show(Producto $producto)
     {
+        $this->authorize('view', $producto);
         return view('productos.show', compact('producto'));
     }
 
@@ -59,6 +76,7 @@ class ProductoController extends Controller
      */
     public function edit(Producto $producto)
     {
+        $this->authorize('update', $producto);
         return view('productos.edit', compact('producto'));
     }
 
@@ -67,6 +85,8 @@ class ProductoController extends Controller
      */
     public function update(UpdateProductoRequest $request, Producto $producto)
     {
+        $this->authorize('update', $producto);
+
         $producto->update($request->validated());
         return redirect()->route('productos.show', $producto)->with('success', 'Producto actualizado exitosamente.');
     }
@@ -76,6 +96,8 @@ class ProductoController extends Controller
      */
     public function destroy(Producto $producto)
     {
+        $this->authorize('delete', $producto);
+
         $producto->delete();
         return redirect()->route('productos.index')->with('success', 'Producto eliminado exitosamente.');
     }

@@ -5,12 +5,16 @@
                 {{ $producto->name }}
             </h2>
             <div class="space-x-3">
-                <a href="{{ route('productos.edit', $producto->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded inline-block">
-                    Editar
-                </a>
-                <button onclick="confirmDelete({{ $producto->id }})" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
-                    Eliminar
-                </button>
+                @can('update', $producto)
+                    <a href="{{ route('productos.edit', $producto->id) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded inline-block">
+                        Editar
+                    </a>
+                @endcan
+                @can('delete', $producto)
+                    <button onclick="confirmDelete({{ $producto->id }})" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Eliminar
+                    </button>
+                @endcan
             </div>
         </div>
     </x-slot>
@@ -108,6 +112,12 @@
                             <p class="font-semibold">Última actualización</p>
                             <p>{{ $producto->updated_at->format('d/m/Y H:i') }}</p>
                         </div>
+                        @if(auth()->user()->isAdmin())
+                            <div>
+                                <p class="font-semibold">Propietario</p>
+                                <p class="text-gray-900 font-medium">{{ $producto->user?->name ?? 'Desconocido' }}</p>
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

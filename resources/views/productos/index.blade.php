@@ -60,6 +60,9 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Precio</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Stock</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Estado</th>
+                                @if(auth()->user()->isAdmin())
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Propietario</th>
+                                @endif
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">Acciones</th>
                             </tr>
                         </thead>
@@ -82,10 +85,21 @@
                                             <span class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">Inactivo</span>
                                         @endif
                                     </td>
+                                    @if(auth()->user()->isAdmin())
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            <span class="px-3 py-1 {{ $producto->user_id === auth()->id() ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700' }} rounded-full text-xs font-semibold">
+                                                {{ $producto->user?->name ?? 'Desconocido' }}
+                                            </span>
+                                        </td>
+                                    @endif
                                     <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                                         <a href="{{ route('productos.show', $producto->id) }}" class="text-blue-600 hover:text-blue-800 font-semibold">Ver</a>
-                                        <a href="{{ route('productos.edit', $producto->id) }}" class="text-yellow-600 hover:text-yellow-800 font-semibold">Editar</a>
-                                        <button onclick="confirmDelete({{ $producto->id }})" class="text-red-600 hover:text-red-800 font-semibold">Eliminar</button>
+                                        @can('update', $producto)
+                                            <a href="{{ route('productos.edit', $producto->id) }}" class="text-yellow-600 hover:text-yellow-800 font-semibold">Editar</a>
+                                        @endcan
+                                        @can('delete', $producto)
+                                            <button onclick="confirmDelete({{ $producto->id }})" class="text-red-600 hover:text-red-800 font-semibold">Eliminar</button>
+                                        @endcan
                                     </td>
                                 </tr>
                             @endforeach
