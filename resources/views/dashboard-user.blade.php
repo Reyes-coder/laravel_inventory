@@ -1,6 +1,7 @@
-@extends('layouts.user')
-
-@section('content')
+<x-user-layout>
+    <x-slot name="header">
+        👋 Bienvenido, {{ Auth::user()->name }}
+    </x-slot>
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Encabezado -->
@@ -88,4 +89,4 @@
         </div>
     </div>
 </div>
-@endsection
+</x-user-layout>

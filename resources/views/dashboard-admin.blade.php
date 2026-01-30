@@ -1,6 +1,7 @@
-@extends('layouts.admin')
-
-@section('content')
+<x-admin-layout>
+    <x-slot name="header">
+        📊 Panel de Administrador
+    </x-slot>
 <div class="py-12">
     <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
         <!-- Encabezado -->
@@ -122,4 +123,4 @@
         </div>
     </div>
 </div>
-@endsection
+</x-admin-layout>
