@@ -45,18 +45,18 @@ php artisan serve
 
 #### Admin (acceso total)
 - Email: `samuereyescastro456@gmail.com`
-- Contraseña: `password`
-- **Verá**: Layout oscuro, todos los productos, columna propietario
+- Contraseña: `Admin@2026!`
+- **Verá**: Layout oscuro, todos los productos, panel de admin con estadísticas
 
 #### User 1 (acceso limitado)
 - Email: `juan.perez@example.com`
-- Contraseña: `password`
-- **Verá**: Layout verde, solo sus productos
+- Contraseña: `Juan@Perez123`
+- **Verá**: Layout verde, solo sus productos, panel de usuario
 
 #### User 2 (acceso limitado)
 - Email: `maria.garcia@example.com`
-- Contraseña: `password`
-- **Verá**: Layout verde, solo sus productos
+- Contraseña: `Maria@Garcia456`
+- **Verá**: Layout verde, solo sus productos, panel de usuario
 
 ---
 
@@ -72,9 +72,24 @@ php artisan serve
 | **Eliminar propios productos** | ✅ | ✅ |
 | **Eliminar productos de otros** | ✅ | ❌ |
 | **Ver propietario de producto** | ✅ | ❌ |
-| **Acceso a Dashboard** | ✅ | ❌ |
+| **Dashboard con Estadísticas** | ✅ | ✅ |
+| **Ver actividades de usuarios** | ✅ | ❌ |
 | **Layout Oscuro** | ✅ | ❌ |
 | **Layout Verde** | ❌ | ✅ |
+
+### 📊 Dashboard Admin
+- Ver total de productos en el sistema
+- Ver total de usuarios activos
+- Ver total de administradores
+- Tabla de productos por usuario
+- Últimos productos creados (últimas 10 actividades)
+
+### 📊 Dashboard User
+- Ver total de mis productos
+- Ver mis últimos productos creados
+- Acceso rápido a crear nuevo producto
+- Consejos de uso
+- Información de permisos
 
 ---
 
