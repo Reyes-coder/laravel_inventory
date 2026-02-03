@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Producto extends Model
 {
+    use HasFactory;
     /*
     |--------------------------------------------------------------------------
     | GLOBAL VARIABLES
@@ -20,6 +22,7 @@ class Producto extends Model
         'name',
         'description',
         'category',
+        'categoria_id',
         'price',
         'stock',
         'sku',
@@ -40,6 +43,30 @@ class Producto extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the categoria for the product.
+     */
+    public function categoria()
+    {
+        return $this->belongsTo(Categoria::class);
+    }
+
+    /**
+     * Get the images for the product.
+     */
+    public function images()
+    {
+        return $this->hasMany(ProductImage::class);
+    }
+
+    /**
+     * Get the primary image for the product.
+     */
+    public function primaryImage()
+    {
+        return $this->hasOne(ProductImage::class)->where('is_primary', true);
     }
 
     // protected $hidden = []; // Ocultar campos en JSON (ej: passwords)

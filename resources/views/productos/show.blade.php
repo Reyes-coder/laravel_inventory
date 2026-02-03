@@ -101,7 +101,116 @@
                     </div>
                 </div>
 
-                <!-- Metadata -->
+                <!-- Product Images Section -->
+                <div class="mt-8 border-t pt-8">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-6">📸 Galería de Imágenes</h2>
+
+                    <!-- Upload Form -->
+                    @can('update', $producto)
+                    <div class="bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 mb-8">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Subir Nueva Imagen</h3>
+                        <form action="{{ route('product-images.store', $producto->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                            @csrf
+                            <div class="flex items-center justify-center w-full">
+                                <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition">
+                                    <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                        <svg class="w-10 h-10 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-700"><span class="font-semibold">Haz clic para subir</span> o arrastra una imagen</p>
+                                        <p class="text-xs text-gray-600 mt-1">PNG, JPG, GIF, SVG (máx. 2MB)</p>
+                                    </div>
+                                    <input type="file" name="image" class="hidden" accept="image/*" required onchange="previewImage(this)">
+                                </label>
+                            </div>
+
+                            <div id="imagePreview" class="hidden">
+                                <img id="previewImg" src="" alt="Preview" class="max-h-40 rounded-lg mx-auto">
+                            </div>
+
+                            @error('image')
+                                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+                                    {{ $message }}
+                                </div>
+                            @enderror
+
+                            <div class="flex justify-end space-x-3">
+                                <button type="reset" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 font-semibold">
+                                    Limpiar
+                                </button>
+                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold">
+                                    ✓ Subir Imagen
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    @endcan
+
+                    <!-- Images Gallery -->
+                    <div>
+                        @if($producto->images->count() > 0)
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ $producto->images->count() }} imagen(es) subida(s)</h3>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                @foreach($producto->images as $image)
+                                    <div class="relative group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
+                                        <!-- Image Container -->
+                                        <div class="relative overflow-hidden bg-gray-100 h-40">
+                                            @if(file_exists(public_path('storage/' . $image->path)))
+                                                <img src="{{ asset('storage/' . $image->path) }}" alt="{{ $image->original_name }}" class="w-full h-full object-cover">
+                                            @else
+                                                <div class="w-full h-full flex items-center justify-center bg-gray-200">
+                                                    <span class="text-gray-500 text-sm">Imagen no encontrada</span>
+                                                </div>
+                                            @endif
+
+                                            <!-- Primary Badge -->
+                                            @if($image->is_primary)
+                                                <div class="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                    ⭐ Principal
+                                                </div>
+                                            @endif
+
+                                            <!-- Actions Overlay -->
+                                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
+                                                <div class="flex space-x-2">
+                                                    @can('update', $producto)
+                                                        @if(!$image->is_primary)
+                                                            <form action="{{ route('product-images.set-primary', $image->id) }}" method="POST" class="inline">
+                                                                @csrf
+                                                                @method('PATCH')
+                                                                <button type="submit" class="bg-yellow-500 hover:bg-yellow-600 text-white p-2 rounded-full transition" title="Establecer como principal">
+                                                                    ⭐
+                                                                </button>
+                                                            </form>
+                                                        @endif
+
+                                                        <button onclick="confirmDeleteImage({{ $image->id }})" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition" title="Eliminar">
+                                                            🗑️
+                                                        </button>
+                                                    @endcan
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Image Info -->
+                                        <div class="p-3">
+                                            <p class="text-xs text-gray-600 truncate">{{ $image->original_name }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ $image->created_at->format('d/m/Y') }}</p>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        @else
+                            <div class="bg-gray-50 rounded-lg p-8 text-center border-2 border-dashed border-gray-300">
+                                <p class="text-gray-600 text-lg mb-2">📷 No hay imágenes para este producto</p>
+                                @can('update', $producto)
+                                    <p class="text-gray-500 text-sm">Sube la primera imagen usando el formulario arriba</p>
+                                @endcan
+                            </div>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="mt-8 border-t pt-6">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
                         <div>

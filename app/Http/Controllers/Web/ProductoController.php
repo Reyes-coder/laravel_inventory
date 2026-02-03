@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
 use App\Models\Producto;
+use App\Models\Categoria;
 use App\Http\Requests\StoreProductoRequest;
 use App\Http\Requests\UpdateProductoRequest;
 use Illuminate\Support\Facades\Auth;
@@ -43,7 +44,8 @@ class ProductoController extends Controller
      */
     public function create()
     {
-        return view('productos.create');
+        $categorias = Categoria::all();
+        return view('productos.create', compact('categorias'));
     }
 
     /**
@@ -77,7 +79,8 @@ class ProductoController extends Controller
     public function edit(Producto $producto)
     {
         $this->authorize('update', $producto);
-        return view('productos.edit', compact('producto'));
+        $categorias = Categoria::all();
+        return view('productos.edit', compact('producto', 'categorias'));
     }
 
     /**

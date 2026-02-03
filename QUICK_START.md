@@ -44,7 +44,7 @@ php artisan serve
 ### 2. Credenciales de prueba
 
 #### Admin (acceso total)
-- Email: `samuereyescastro456@gmail.com`
+- Email: `samuelreyescastro456@gmail.com`
 - Contraseña: `Admin@2026!`
 - **Verá**: Layout oscuro, todos los productos, panel de admin con estadísticas
 
