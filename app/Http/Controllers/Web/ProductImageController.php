@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Web;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProductImageRequest;
 use App\Models\Producto;
 use App\Models\ProductImage;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ProductImageController extends Controller
@@ -13,28 +13,52 @@ class ProductImageController extends Controller
     /**
      * Store an image for a product
      */
-    public function store(Request $request, Producto $producto)
+    public function store(StoreProductImageRequest $request, Producto $producto)
     {
+        // Autorización primero - sin catch
         $this->authorize('update', $producto);
 
-        $validated = $request->validate([
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048'
-        ]);
+        try {
+            // La validación ya está hecha por StoreProductImageRequest
+            $validated = $request->validated();
 
-        // Almacenar la imagen
-        $path = $request->file('image')->store("productos/{$producto->id}", 'public');
+            // Validar que el archivo fue realmente enviado
+            if (!$request->hasFile('image') || !$request->file('image')->isValid()) {
+                return back()->withErrors(['image' => 'El archivo no es válido. Por favor, intenta nuevamente.']);
+            }
 
-        // Si no hay imagen primaria, hacer que esta sea la primera
-        $isPrimary = !$producto->images()->where('is_primary', true)->exists();
+            $file = $request->file('image');
 
-        ProductImage::create([
-            'producto_id' => $producto->id,
-            'path' => $path,
-            'original_name' => $request->file('image')->getClientOriginalName(),
-            'is_primary' => $isPrimary
-        ]);
+            // Crear el directorio si no existe (Laravel lo hace automáticamente)
+            $storagePath = "productos/{$producto->id}";
 
-        return back()->with('success', 'Imagen agregada exitosamente.');
+            // Almacenar la imagen
+            $path = $file->store($storagePath, 'public');
+
+            if (!$path) {
+                return back()->withErrors(['image' => 'No se pudo guardar la imagen. Verifica los permisos del servidor.']);
+            }
+
+            // Si no hay imagen primaria, hacer que esta sea la primera
+            $isPrimary = !$producto->images()->where('is_primary', true)->exists();
+
+            ProductImage::create([
+                'producto_id' => $producto->id,
+                'user_id' => auth()->id(),
+                'path' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'is_primary' => $isPrimary
+            ]);
+
+            return back()->with('success', 'Imagen agregada exitosamente.');
+        } catch (\Exception $e) {
+            \Log::error('Error al subir imagen: ' . $e->getMessage(), [
+                'producto_id' => $producto->id,
+                'user_id' => auth()->id(),
+                'exception' => $e
+            ]);
+            return back()->withErrors(['image' => 'Error al subir la imagen. Por favor intenta nuevamente.']);
+        }
     }
 
     /**

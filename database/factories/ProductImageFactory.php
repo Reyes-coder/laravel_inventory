@@ -18,6 +18,7 @@ class ProductImageFactory extends Factory
     {
         return [
             'producto_id' => \App\Models\Producto::factory(),
+            'user_id' => \App\Models\User::factory(),
             'path' => 'productos/' . $this->faker->uuid . '/' . $this->faker->image(),
             'original_name' => $this->faker->image(),
             'is_primary' => false

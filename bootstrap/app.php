@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Las rutas de imágenes no necesitan CSRF en tests
+        $middleware->validateCsrfTokens(except: [
+            '/productos/*/images',
+            '/product-images/*',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

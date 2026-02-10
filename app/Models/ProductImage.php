@@ -10,6 +10,7 @@ class ProductImage extends Model
     use HasFactory;
     protected $fillable = [
         'producto_id',
+        'user_id',
         'path',
         'original_name',
         'is_primary'
@@ -25,5 +26,13 @@ class ProductImage extends Model
     public function producto()
     {
         return $this->belongsTo(Producto::class);
+    }
+
+    /**
+     * Get the user that uploaded this image.
+     */
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class);
     }
 }

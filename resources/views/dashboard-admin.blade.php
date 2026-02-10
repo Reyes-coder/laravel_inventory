@@ -101,7 +101,7 @@
                             <div>
                                 <h3 class="font-semibold text-slate-900 dark:text-slate-100">{{ $producto->name }}</h3>
                                 <p class="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                    👤 Creado por: <span class="font-medium">{{ $producto->user->name }}</span>
+                                    👤 Creado por: <span class="font-medium">{{ $producto->user?->name ?? 'Usuario eliminado' }}</span>
                                 </p>
                                 <p class="text-xs text-slate-500 dark:text-slate-500 mt-1">
                                     📅 {{ $producto->created_at->format('d/m/Y H:i') }}

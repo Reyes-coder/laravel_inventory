@@ -109,18 +109,18 @@
                     @can('update', $producto)
                     <div class="bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg p-6 mb-8">
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Subir Nueva Imagen</h3>
-                        <form action="{{ route('product-images.store', $producto->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+                        <form id="imageUploadForm" action="{{ route('product-images.store', $producto->id) }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                             @csrf
                             <div class="flex items-center justify-center w-full">
-                                <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition">
+                                <label class="flex flex-col items-center justify-center w-full h-40 border-2 border-blue-300 border-dashed rounded-lg cursor-pointer bg-blue-50 hover:bg-blue-100 transition" id="imageLabel">
                                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
                                         <svg class="w-10 h-10 text-blue-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
                                         <p class="text-sm text-gray-700"><span class="font-semibold">Haz clic para subir</span> o arrastra una imagen</p>
-                                        <p class="text-xs text-gray-600 mt-1">PNG, JPG, GIF, SVG (máx. 2MB)</p>
+                                        <p class="text-xs text-gray-600 mt-1">PNG, JPG, GIF, SVG, WebP (máx. 2MB)</p>
                                     </div>
-                                    <input type="file" name="image" class="hidden" accept="image/*" required onchange="previewImage(this)">
+                                    <input type="file" id="imageInput" name="image" class="hidden" accept="image/*" required onchange="previewImage(this)">
                                 </label>
                             </div>
 
@@ -128,30 +128,48 @@
                                 <img id="previewImg" src="" alt="Preview" class="max-h-40 rounded-lg mx-auto">
                             </div>
 
-                            @error('image')
+                            <!-- Display validation errors -->
+                            @if ($errors->has('image'))
                                 <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-                                    {{ $message }}
+                                    <strong>Error:</strong> {{ $errors->first('image') }}
                                 </div>
-                            @enderror
+                            @endif
+
+                            <!-- Display success message -->
+                            @if (session('success'))
+                                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+                                    ✓ {{ session('success') }}
+                                </div>
+                            @endif
+
+                            <div id="uploadStatus" class="hidden p-3 rounded text-sm font-semibold"></div>
 
                             <div class="flex justify-end space-x-3">
                                 <button type="reset" class="px-4 py-2 text-gray-700 bg-gray-200 rounded hover:bg-gray-300 font-semibold">
                                     Limpiar
                                 </button>
-                                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold">
+                                <button id="submitBtn" type="submit" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-semibold">
                                     ✓ Subir Imagen
                                 </button>
                             </div>
                         </form>
+
                     </div>
                     @endcan
 
                     <!-- Images Gallery -->
                     <div>
-                        @if($producto->images->count() > 0)
-                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ $producto->images->count() }} imagen(es) subida(s)</h3>
+                        @php
+                            // Filtrar imágenes según el rol del usuario
+                            $visibleImages = auth()->user()->isAdmin()
+                                ? $producto->images
+                                : $producto->images->where('user_id', auth()->id());
+                        @endphp
+
+                        @if($visibleImages->count() > 0)
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ $visibleImages->count() }} imagen(es) subida(s)</h3>
                             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                                @foreach($producto->images as $image)
+                                @foreach($visibleImages as $image)
                                     <div class="relative group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
                                         <!-- Image Container -->
                                         <div class="relative overflow-hidden bg-gray-100 h-40">
@@ -170,6 +188,13 @@
                                                 </div>
                                             @endif
 
+                                            <!-- Uploader Badge (Only for Admin) -->
+                                            @if(auth()->user()->isAdmin() && $image->user)
+                                                <div class="absolute top-2 right-2 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                                                    👤 {{ $image->user->name }}
+                                                </div>
+                                            @endif
+
                                             <!-- Actions Overlay -->
                                             <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 transition flex items-center justify-center opacity-0 group-hover:opacity-100 transition">
                                                 <div class="flex space-x-2">
@@ -184,9 +209,12 @@
                                                             </form>
                                                         @endif
 
-                                                        <button onclick="confirmDeleteImage({{ $image->id }})" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition" title="Eliminar">
-                                                            🗑️
-                                                        </button>
+                                                        <!-- Solo el dueño de la imagen o el admin pueden eliminarla -->
+                                                        @if(auth()->user()->isAdmin() || $image->user_id === auth()->id())
+                                                            <button onclick="confirmDeleteImage({{ $image->id }})" class="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full transition" title="Eliminar">
+                                                                🗑️
+                                                            </button>
+                                                        @endif
                                                     @endcan
                                                 </div>
                                             </div>
@@ -195,7 +223,10 @@
                                         <!-- Image Info -->
                                         <div class="p-3">
                                             <p class="text-xs text-gray-600 truncate">{{ $image->original_name }}</p>
-                                            <p class="text-xs text-gray-500 mt-1">{{ $image->created_at->format('d/m/Y') }}</p>
+                                            <p class="text-xs text-gray-500 mt-1">{{ $image->created_at->format('d/m/Y H:i') }}</p>
+                                            @if(auth()->user()->isAdmin() && $image->user)
+                                                <p class="text-xs text-blue-600 mt-1">Subida por: <strong>{{ $image->user->name }}</strong></p>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
@@ -255,6 +286,9 @@
     </div>
 
     <script>
+    const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/svg+xml', 'image/webp'];
+
     function confirmDelete(productId) {
         document.getElementById('deleteModal').classList.remove('hidden');
         document.getElementById('deleteForm').action = `/productos/${productId}`;
@@ -270,5 +304,114 @@
             closeDeleteModal();
         }
     });
+
+    // Función para previsualizar imagen antes de subir
+    function previewImage(input) {
+        const preview = document.getElementById('imagePreview');
+        const previewImg = document.getElementById('previewImg');
+        const uploadStatus = document.getElementById('uploadStatus');
+
+        // Limpiar mensajes de error previos
+        uploadStatus.classList.add('hidden');
+        uploadStatus.textContent = '';
+
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+
+            // Validar tipo de archivo
+            if (!ALLOWED_TYPES.includes(file.type)) {
+                uploadStatus.classList.remove('hidden');
+                uploadStatus.classList.add('bg-red-100', 'border', 'border-red-400', 'text-red-700');
+                uploadStatus.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                uploadStatus.textContent = `❌ Tipo de archivo no permitido. Tipos aceptados: JPEG, PNG, GIF, SVG, WebP`;
+                input.value = '';
+                preview.classList.add('hidden');
+                return;
+            }
+
+            // Validar tamaño de archivo
+            if (file.size > MAX_FILE_SIZE) {
+                uploadStatus.classList.remove('hidden');
+                uploadStatus.classList.add('bg-red-100', 'border', 'border-red-400', 'text-red-700');
+                uploadStatus.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
+                uploadStatus.textContent = `❌ El archivo es muy grande. Tamaño máximo: 2MB. Tu archivo: ${(file.size / 1024 / 1024).toFixed(2)}MB`;
+                input.value = '';
+                preview.classList.add('hidden');
+                return;
+            }
+
+            // Si pasa las validaciones, mostrar preview
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImg.src = e.target.result;
+                preview.classList.remove('hidden');
+                uploadStatus.classList.remove('hidden');
+                uploadStatus.classList.add('bg-green-100', 'border', 'border-green-400', 'text-green-700');
+                uploadStatus.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
+                uploadStatus.textContent = `✓ Imagen lista para subir (${(file.size / 1024).toFixed(2)}KB)`;
+            }
+
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // Validar formulario antes de enviar
+    document.getElementById('imageUploadForm')?.addEventListener('submit', function(e) {
+        const fileInput = document.getElementById('imageInput');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (!fileInput.files || !fileInput.files[0]) {
+            e.preventDefault();
+            alert('Por favor selecciona una imagen');
+            return false;
+        }
+
+        const file = fileInput.files[0];
+
+        // Doble validación
+        if (!ALLOWED_TYPES.includes(file.type)) {
+            e.preventDefault();
+            alert('Tipo de archivo no permitido');
+            return false;
+        }
+
+        if (file.size > MAX_FILE_SIZE) {
+            e.preventDefault();
+            alert('El archivo es muy grande (máximo 2MB)');
+            return false;
+        }
+
+        // Deshabilitar botón durante el envío
+        submitBtn.disabled = true;
+        submitBtn.textContent = '⏳ Subiendo...';
+    });
+    // Función para confirmar eliminación de imagen
+    function confirmDeleteImage(imageId) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+            // Crear un formulario dinámico para enviar la solicitud DELETE
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = `/product-images/${imageId}`;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (csrfToken) {
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = '_token';
+                csrfInput.value = csrfToken;
+                form.appendChild(csrfInput);
+            }
+
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'DELETE';
+            form.appendChild(methodInput);
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
     </script>
 </x-app-layout>

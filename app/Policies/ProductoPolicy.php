@@ -44,6 +44,15 @@ class ProductoPolicy
     }
 
     /**
+     * Determine whether the user can upload images to the product.
+     * - Any authenticated user can upload images to any product
+     */
+    public function uploadImages(User $user, Producto $producto): bool
+    {
+        return true;
+    }
+
+    /**
      * Determine whether the user can delete the model.
      * - Admin can delete any product
      * - User can delete only their own products

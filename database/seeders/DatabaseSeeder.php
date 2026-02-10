@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'samuelreyescastro456@gmail.com',
             'password' => Hash::make('Admin@2026!'),
             'role' => 'admin',
+            'email_verified_at' => now(),
         ]);
 
         // User 1: Juan Pérez
@@ -30,6 +31,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'juan.perez@example.com',
             'password' => Hash::make('Juan@Perez123'),
             'role' => 'user',
+            'email_verified_at' => now(),
         ]);
 
         // User 2: María García
@@ -38,6 +40,13 @@ class DatabaseSeeder extends Seeder
             'email' => 'maria.garcia@example.com',
             'password' => Hash::make('Maria@Garcia456'),
             'role' => 'user',
+            'email_verified_at' => now(),
+        ]);
+
+        // Llamar otros seeders
+        $this->call([
+            CategoriaSeeder::class,
+            ProductoSeeder::class,
         ]);
     }
 }
