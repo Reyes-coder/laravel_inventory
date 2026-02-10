@@ -1,55 +1,65 @@
-FROM php:8.2-fpm
+FROM php:8.4-fpm
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Install dependencies
+# Install system dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    locales \
+    libonig-dev \
+    libxml2-dev \
+    libsqlite3-dev \
     zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
     unzip \
-    git \
     curl \
-    nano \
+    git \
     sqlite3 \
-    libsqlite3-dev
+    && rm -rf /var/lib/apt/lists/*
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install PHP extensions
-RUN docker-php-ext-install pdo_mysql pdo_sqlite
-RUN docker-php-ext-install gd
+# Install PHP extensions required for Laravel
+RUN docker-php-ext-install pdo
+RUN docker-php-ext-install pdo_sqlite
+RUN docker-php-ext-install pdo_mysql
 RUN docker-php-ext-install bcmath
+RUN docker-php-ext-install mbstring
+RUN docker-php-ext-install xml
+RUN docker-php-ext-install gd
 
-# Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Copy application
+# Copy application files
 COPY . /var/www/html
 
+# Set correct permissions before installing dependencies
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 755 /var/www/html
+
 # Install Laravel dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
-# Create required directories
-RUN mkdir -p /var/www/html/storage/logs
-RUN mkdir -p /var/www/html/bootstrap/cache
-RUN mkdir -p /var/www/html/database
-RUN touch /var/www/html/database/database.sqlite
+# Create and set permissions for required directories
+RUN mkdir -p /var/www/html/storage/logs \
+    && mkdir -p /var/www/html/bootstrap/cache \
+    && mkdir -p /var/www/html/database \
+    && mkdir -p /var/www/html/storage/app/public \
+    && touch /var/www/html/database/database.sqlite \
+    && chown -R www-data:www-data /var/www/html/storage \
+    && chown -R www-data:www-data /var/www/html/bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html/database \
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache \
+    && chmod -R 775 /var/www/html/database
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html
-RUN chmod -R 755 /var/www/html/storage
-RUN chmod -R 755 /var/www/html/bootstrap/cache
-RUN chmod -R 755 /var/www/html/database
+# Generate app key and run migrations
+RUN php artisan key:generate --force 2>/dev/null || true
+RUN php artisan migrate:fresh --seed --force 2>/dev/null || true
 
 # Expose port
-EXPOSE 9000
+EXPOSE 8000
 
-CMD ["php-fpm"]
+# Use php artisan serve for development
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
