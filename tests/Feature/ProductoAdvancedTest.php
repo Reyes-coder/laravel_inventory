@@ -87,6 +87,7 @@ describe('Producto Feature Tests', function () {
             ->put("/productos/{$producto->id}", [
                 'name' => 'Actualizado',
                 'price' => 99.99,
+                'stock' => 5,
                 'categoria_id' => $this->categoria->id
             ])
             ->assertRedirect("/productos/{$producto->id}");
@@ -106,7 +107,10 @@ describe('Producto Feature Tests', function () {
 
         $this->actingAs($this->user)
             ->put("/productos/{$producto->id}", [
-                'name' => 'Hack'
+                'name' => 'Hack',
+                'price' => 100,
+                'stock' => 5,
+                'categoria_id' => $this->categoria->id
             ])
             ->assertForbidden();
 
@@ -126,6 +130,7 @@ describe('Producto Feature Tests', function () {
             ->put("/productos/{$producto->id}", [
                 'name' => 'Admin Edit',
                 'price' => 49.99,
+                'stock' => 5,
                 'categoria_id' => $this->categoria->id
             ])
             ->assertRedirect();
@@ -192,6 +197,7 @@ describe('Producto Feature Tests', function () {
             ->post('/productos', [
                 'name' => 'Test',
                 'price' => 50,
+                'stock' => 5,
                 'categoria_id' => 9999
             ])
             ->assertSessionHasErrors('categoria_id');

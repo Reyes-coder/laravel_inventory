@@ -2,7 +2,9 @@
 
 namespace App\Providers;
 
+use App\Actions\Jetstream\CreateTeam;
 use App\Actions\Jetstream\DeleteUser;
+use App\Actions\Jetstream\DeleteTeam;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Jetstream\Jetstream;
 
@@ -23,6 +25,8 @@ class JetstreamServiceProvider extends ServiceProvider
     {
         $this->configurePermissions();
 
+        Jetstream::createTeamsUsing(CreateTeam::class);
+        Jetstream::deleteTeamsUsing(DeleteTeam::class);
         Jetstream::deleteUsersUsing(DeleteUser::class);
     }
 

@@ -28,7 +28,6 @@ class Producto extends Model
         'sku',
         'active',
         'user_id',
-        'role'
     ];
 
     protected $casts = [

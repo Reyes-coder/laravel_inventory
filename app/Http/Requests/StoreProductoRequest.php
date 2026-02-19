@@ -23,6 +23,7 @@ class StoreProductoRequest extends FormRequest
             'name' => 'required|string|max:255|unique:productos,name',
             'description' => 'nullable|string|max:1000',
             'category' => 'nullable|string|max:255',
+            'categoria_id' => 'nullable|exists:categorias,id',
             'price' => 'required|numeric|min:0.01|max:999999.99',
             'stock' => 'required|integer|min:0',
             'sku' => 'nullable|string|max:255|unique:productos,sku',
@@ -42,6 +43,8 @@ class StoreProductoRequest extends FormRequest
             'price.min' => 'El precio debe ser mayor a 0.',
             'stock.required' => 'El stock es requerido.',
             'stock.min' => 'El stock no puede ser negativo.',
+            'categoria_id.exists' => 'La categoría seleccionada no existe.',
+            'sku.unique' => 'El SKU debe ser único por usuario.',
         ];
     }
 }

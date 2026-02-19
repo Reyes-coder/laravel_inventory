@@ -16,10 +16,11 @@ class CategoriaFactory extends Factory
      */
     public function definition(): array
     {
+        $name = $this->faker->unique()->words(2, true);
         return [
-            'name' => $this->faker->unique()->word(),
+            'name' => $name,
             'description' => $this->faker->sentence(),
-            'slug' => $this->faker->unique()->slug()
+            'slug' => str($name)->slug()->toString()
         ];
     }
 }

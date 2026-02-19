@@ -108,6 +108,7 @@ describe('Validation Tests', function () {
             ->post('/productos', [
                 'name' => 'Product',
                 'price' => 50,
+                'stock' => 5,
                 'description' => '',
                 'categoria_id' => $categoria->id
             ]);
@@ -122,6 +123,7 @@ describe('Validation Tests', function () {
             ->post('/productos', [
                 'name' => 'Product 1',
                 'price' => 50,
+                'stock' => 5,
                 'sku' => 'SKU-001',
                 'categoria_id' => $categoria->id
             ])
@@ -131,6 +133,7 @@ describe('Validation Tests', function () {
             ->post('/productos', [
                 'name' => 'Product 2',
                 'price' => 60,
+                'stock' => 5,
                 'sku' => 'SKU-001',
                 'categoria_id' => $categoria->id
             ])
@@ -145,6 +148,7 @@ describe('Validation Tests', function () {
             ->post('/productos', [
                 'name' => 'Product 1',
                 'price' => 50,
+                'stock' => 5,
                 'sku' => 'SKU-001',
                 'categoria_id' => $categoria->id
             ])
@@ -154,6 +158,7 @@ describe('Validation Tests', function () {
             ->post('/productos', [
                 'name' => 'Product 2',
                 'price' => 60,
+                'stock' => 5,
                 'sku' => 'SKU-001',
                 'categoria_id' => $categoria->id
             ])
